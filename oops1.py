@@ -16,5 +16,3 @@ jeeznu = employee()
 
 print(f"Jeeznu salary: {jeeznu.salary}")
 jeeznu.travel("GOA")
-
-==
