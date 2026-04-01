@@ -59,6 +59,3 @@ satwik = employee()
 satwik.get_id()
 satwik.set_id(2004288)
 print(satwik.get_fullId())
-
-saketh = employee()
-print(saketh.get_fullId())
