@@ -2,4 +2,4 @@ outs:
 - md5: a5d9ba04542ceb7c6b72f29903865faa
   size: 15
   hash: md5
-  path: data.txt
+  path: cp.txt
