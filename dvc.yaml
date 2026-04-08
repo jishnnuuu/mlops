@@ -1,0 +1,15 @@
+stages:
+  preprocess:
+    cmd: python preprocess.py
+    deps:
+    - dataset/data.txt
+    - preprocess.py
+    outs:
+    - dataset/processed_data.txt
+  train:
+    cmd: python train.py
+    deps:
+    - dataset/processed_data.txt
+    - train.py
+    outs:
+    - model.txt

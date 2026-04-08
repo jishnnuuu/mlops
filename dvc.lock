@@ -1,0 +1,34 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: python preprocess.py
+    deps:
+    - path: dataset/data.txt
+      hash: md5
+      md5: ad4ae5d572b8fae0de5ae24333905368
+      size: 12
+    - path: preprocess.py
+      hash: md5
+      md5: 30bca86dff8e60eb9fe51c1c8e1f22ae
+      size: 228
+    outs:
+    - path: dataset/processed_data.txt
+      hash: md5
+      md5: 1134f576ad392e0a6512dc480b5a48e9
+      size: 12
+  train:
+    cmd: python train.py
+    deps:
+    - path: dataset/processed_data.txt
+      hash: md5
+      md5: 1134f576ad392e0a6512dc480b5a48e9
+      size: 12
+    - path: train.py
+      hash: md5
+      md5: cdf131e89a1c4dcb31f76914a4f7c97e
+      size: 206
+    outs:
+    - path: model.txt
+      hash: md5
+      md5: df53639d60c270795e2d3508adb20869
+      size: 35

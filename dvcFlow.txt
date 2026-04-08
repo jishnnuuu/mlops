@@ -1,0 +1,121 @@
+# initialize the repository with dvc
+>> dvc init
+
+# create a sample dataset
+>> mkdir dataset
+>> echo "version 1 data" > dataset/data.txt
+
+# add the dataset to dvc
+>> dvc add dataset/data.txt
+
+# open the .dvc file to see the metadata
+>> cat dataset/data.txt.dvc
+
+outs:
+- md5: 5d41402abc4b2a76b9719d911017c592
+  size: 15
+  path: data.txt
+
+# what the .dvc file means:
+    - .dvc file is a pointer, not the data itself, This file is commitable and can be tracked by git.
+    - md5 is the hash of the file content, used for tracking changes.(think of it as a fingerprint of the file)
+    - size is the file size in bytes, used for tracking changes and storage management.
+    - path is the relative path to the data file, used for locating the data when needed
+
+
+# let's now travel back in time
+>> git log --oneline
+
+85bced1 (HEAD -> main) updated data to v2
+f8cf749 added data v1
+507ec77 (origin/main, origin/HEAD) moved all OOP'S related files to OOP's folder and updated the README.md file accordingly.
+3e69c2b learned super() and it's usage along with inheritance
+9569743 made some changes to oops1.py
+94317fd learned encapsulation, getter and setter methods
+eb1db2b project basic structure setup done
+44808d4 few typos are rectified
+6a702c2 class and object basics are done
+a9cac3a updated gitignore file
+6311431 Initial commit
+
+>> git checkout f8cf749
+
+# see the content of the data.txt file at this point in time
+>> cat dataset/data.txt
+ version 2 data
+
+we might still see latest version
+because git changed .dvc file, but actual data is not auto-restored, 
+we need to run dvc checkout to restore the data to the state of that commit
+
+>> dvc checkout
+>> cat dataset/data.txt
+version 1 data
+
+#### Let's build a pipeline to automate the DVC workflow
+
+Each step in pipeline is a stage, and each stage has a command, dependencies and outputs.
+
+# we create preprocess.py (Stage 1)
+# we create train.py (Stage 2)
+
+>> dvc stage add -n preprocess \
+  -d preprocess.py -d dataset/data.txt \
+  -o dataset/processed_data.txt \
+  python preprocess.py
+
+-n preprocess → stage name
+-d → dependencies (inputs)
+-o → outputs
+command → what to run
+
+# this will create a dvc.yaml file with the stage definition
+
+stages:
+  preprocess:
+    cmd: python preprocess.py
+    deps:
+    - dataset/data.txt
+    - preprocess.py
+    outs:
+    - dataset/processed_data.txt
+
+# lets add the train stage
+
+>> dvc stage add -n train \
+  -d train.py -d dataset/processed_data.txt \
+  -o model.txt \
+  python train.py
+
+# that will update the dvc.yaml file to include the train stage
+stages:
+  preprocess:
+    cmd: python preprocess.py
+    deps:
+    - dataset/data.txt
+    - preprocess.py
+    outs:
+    - dataset/processed_data.txt
+  train:
+    cmd: python train.py
+    deps:
+    - dataset/processed_data.txt
+    - train.py
+    outs:
+    - model.txt
+
+# to run the pipeline we can use the command repro
+>> dvc repro
+"this will run the preprocess stage first, then the train stage, 
+and it will automatically track the changes and update the outputs accordingly."
+
+# let us change the data and see how the pipeline reacts
+>> echo "new data" > dataset/data.txt
+>> dvc repro
+
+DVC tracks for each stage:
+dependencies (inputs)
+outputs
+command
+It hashes dependencies
+If hash unchanged → skip
