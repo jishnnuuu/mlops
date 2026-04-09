@@ -160,3 +160,22 @@ Experiment                 Created        lr     data>
  dvc exp apply <id>
  dvc exp apply a8d5e09
 
+## Remote Storage setup
+
+# make a directory for remote storage
+>> mkdir ../dvc-storage
+
+# configure dvc to use that directory as remote storage
+>> dvc remote add -d myremote ../dvc-storage
+
+# push data to remote storage
+>> dvc push
+
+# Now data moves from:
+.dvc/cache → ../dvc-storage
+
+# to simulate data loss, we can delete the cache directory
+>> rm -rf .dvc/cache
+ 
+# pull data from remote storage to restore it
+>> dvc pull
