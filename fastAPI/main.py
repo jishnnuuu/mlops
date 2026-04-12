@@ -1,4 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Path
+"""
+Path() function in FastAPI is used to provide metadata, validation rules, 
+and documentation hints for path parameters in out API endpoints
+"""
 import json
 
 app = FastAPI()
@@ -27,7 +31,7 @@ def view():
 
 #path params(dynamic)
 @app.get('/patient/{patient_id}')
-def view_patient(patient_id: str):
+def view_patient(patient_id: str = Path(..., description='ID of the patient in the DB', example='P002')):
     # load all the patients
     data = load_data()
     
