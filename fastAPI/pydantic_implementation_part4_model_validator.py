@@ -20,7 +20,7 @@ class Patient(BaseModel):
     # using EmailStr built in pydantic data validation for validation email addresses
     email: EmailStr
     weight : Annotated[float, Field(gt=0, strict=True)] # weight is greater than 0
-    # we can keep few variables optional also give a default value for it
+    # we can keep few variables optional also and give a default value for it
     married : Annotated[Optional[bool], Field(default = None, description='Is the Patient Married or not?')]
     allergies : List[str]
     # rather Dict[str, str] we give ContactDetails model

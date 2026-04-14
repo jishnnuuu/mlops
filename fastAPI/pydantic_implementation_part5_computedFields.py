@@ -1,5 +1,6 @@
-from pydantic import BaseModel, EmailStr, AnyUrl, field_validator, Field
+from pydantic import BaseModel, EmailStr, AnyUrl, field_validator, Field, model_validator, computed_field
 from typing import List, Dict, Optional, Annotated
+from typing_extensions import Self
 
 # usual non-data validation method
 def patient_details(name, age):
@@ -7,7 +8,7 @@ def patient_details(name, age):
 
 class ContactDetails(BaseModel):
     address : str
-    phone : int
+    phone : Annotated[Optional[int], Field(default=None, title='Phone Number',description="Enter phone number")]
 
 # pydantic data validation
 class Patient(BaseModel):
@@ -20,10 +21,11 @@ class Patient(BaseModel):
     email: EmailStr
     weight : Annotated[float, Field(gt=0, strict=True)] # weight is greater than 0
     # we can keep few variables optional also and give a default value for it
+    height : Annotated[Optional[float], Field(gt=0, strict=True)] = None
     married : Annotated[Optional[bool], Field(default = None, description='Is the Patient Married or not?')]
     allergies : List[str]
     # rather Dict[str, str] we give ContactDetails model
-    contact_details: ContactDetails
+    contact_details: Annotated[ContactDetails, Field(description="Fill Contact Details", title="Contact Details")]
     linkedInURL : AnyUrl
     
     # Capitalizing name
@@ -53,16 +55,32 @@ class Patient(BaseModel):
         if not v.host or 'linkedin.com' not in v.host:
             raise ValueError('The URL must be a valid linkedin.com profile')
         return v
+    
+    @model_validator(mode='after')
+    def validate_emergency(cls, self) -> Self:
+        if self.age > 60 and  self.contact_details.phone is None:
+            raise ValueError('Patients of age above 60 need to have contact_details filled')
+        return self
+    
+    @computed_field
+    @property
+    def bmi(self) -> float:
+        if self.height is None:
+            return None
+        bmi = round(self.weight / (self.height)**2,2)
+        return bmi
+    
 
 patient_info = {
     'name' : 'ram',
-    'age'  : '21',
+    'age'  : '62',
     # if instead of 21 though you give '21' internally pydantic converts into integer given age:int
     'email' : 'ram@gmail.com',
     # ram@gmail.com works, but ramgmail.com will give validation error as we used in built EmailStr for email validation
     'weight' : 70,
     # same way weight is converted to float though integer is passes given weight:float
     # 'married' : True,
+    # 'height' : 6,
     'allergies' : ['pollen', 'dust'],
     # in this case i want contact_details dictionary to have str for address, and int for phone, so we create a specific model for it
     'contact_details' : {
@@ -78,6 +96,7 @@ patient1 = Patient(**patient_info)
 # pydantic object is passed onto the function
 def patient_details_pyd(patient: Patient):
     print(f"Name : {patient.name}, Age : {patient.age}, weight: {patient.weight}")
+    print(f"Computed Field BMI: {patient.bmi}")
     print(f"Email address : {patient.email}")
     print(f"Marital Status: {patient.married}")
     print(f"Allergies : {patient.allergies}")
